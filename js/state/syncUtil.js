@@ -154,6 +154,7 @@ const applySiteSettingRecord = (record) => {
  * @param {Object} record
  */
 module.exports.applySyncRecord = (record) => {
+  if (!record || !record.objectData) { return }
   switch (record.objectData) {
     case 'bookmark':
     case 'historySite':

@@ -368,7 +368,20 @@ module.exports.init = () => {
     extensionActions.extensionDisabled(config.torrentExtensionId)
   }
 
-  let registerComponents = () => {
+  let isSyncDiff = (diff) => {
+    // checks if a diff is related to enabling/disabling brave sync
+    if (!diff || !diff.length) {
+      return false
+    }
+    for (let i = 0; i < diff.length; i++) {
+      if (diff[i].path === '/settings/sync.enabled') {
+        return true
+      }
+    }
+    return false
+  }
+
+  let registerComponents = (diff) => {
     if (getSetting(settings.PDFJS_ENABLED)) {
       registerComponent(config.PDFJSExtensionId)
     } else {
@@ -408,6 +421,12 @@ module.exports.init = () => {
 
     if (appStore.getState().getIn(['widevine', 'enabled'])) {
       registerComponent(config.widevineComponentId)
+    }
+
+    if (isSyncDiff(diff)) {
+      // reload the brave extension
+      console.log('toggling')
+      session.defaultSession.extensions.reload(config.braveExtensionId)
     }
   }
 

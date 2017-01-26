@@ -874,12 +874,10 @@ class SyncTab extends ImmutableComponent {
 
   get setupContent () {
     // displayed before a sync userId has been created
-    return this.enabled
-      ? <div className='syncWarning' data-l10n-id='syncRestartNeeded' />
-      : <div>
-        <Button l10nId='syncStart' className='primaryButton' onClick={this.props.showOverlay.bind(this, 'syncStart')} />
-        <Button l10nId='syncAdd' className='whiteButton' onClick={this.props.showOverlay.bind(this, 'syncAdd')} />
-      </div>
+    return <div>
+      <Button l10nId='syncStart' className='primaryButton' onClick={this.props.showOverlay.bind(this, 'syncStart')} />
+      <Button l10nId='syncAdd' className='whiteButton' onClick={this.props.showOverlay.bind(this, 'syncAdd')} />
+    </div>
   }
 
   get postSetupContent () {
@@ -1588,7 +1586,6 @@ class AboutPreferences extends React.Component {
     if (key === settings.HARDWARE_ACCELERATION_ENABLED ||
         key === settings.DO_NOT_TRACK ||
         key === settings.LANGUAGE ||
-        (key === settings.SYNC_ENABLED && value === true) ||
         key === settings.PDFJS_ENABLED || key === settings.TORRENT_VIEWER_ENABLED ||
         key === settings.SMOOTH_SCROLL_ENABLED || key === settings.SEND_CRASH_REPORTS) {
       ipc.send(messages.PREFS_RESTART, key, value)

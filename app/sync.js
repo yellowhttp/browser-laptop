@@ -25,14 +25,20 @@ const CATEGORY_MAP = syncUtil.CATEGORY_MAP
 const CATEGORY_NAMES = Object.keys(categories)
 const SYNC_ACTIONS = Object.values(syncConstants)
 
+let dispatcherCallback = null
+
 const log = (message) => {
   if (!config.debug) { return }
   console.log(`sync ${new Date().getTime()}:`, message)
 }
 
+const syncEnabled = () => {
+  return getSetting(settings.SYNC_ENABLED) === true
+}
+
 let deviceId = null /** @type {Array|null} */
 let pollIntervalId = null
-let dispatcherCallback = null
+let hasRun = false
 
 /**
  * Sends sync records of the same category to the sync server.
@@ -94,12 +100,15 @@ const validateAction = (action) => {
 }
 
 const doAction = (sender, action) => {
-  if (action.key === settings.SYNC_ENABLED && action.value === false) {
-    module.exports.stop()
-    // XXX: setting SYNC_ENABLED to true requires restart
+  if (action.key === settings.SYNC_ENABLED) {
+    if (action.value === false) {
+      module.exports.stop()
+    }
+  }
+  // If sync is not enabled, the following actions should be ignored.
+  if (!syncEnabled() || validateAction(action) !== true || sender.isDestroyed()) {
     return
   }
-  if (validateAction(action) !== true) { return }
   switch (action.actionType) {
     case syncConstants.SYNC_ADD_SITE:
       sendSyncRecords(sender, writeActions.CREATE,
@@ -145,11 +154,10 @@ const doAction = (sender, action) => {
  * @param {Event} e
  */
 module.exports.onSyncReady = (isFirstRun, e) => {
-  if (getSetting(settings.SYNC_ENABLED) !== true) {
+  hasRun = true
+  if (!syncEnabled()) {
     return
   }
-  dispatcherCallback = doAction.bind(null, e.sender)
-  appDispatcher.register(dispatcherCallback)
   if (isFirstRun) {
     // Sync the device id for this device
     sendSyncRecords(e.sender, writeActions.CREATE, [{
@@ -218,7 +226,7 @@ module.exports.onSyncReady = (isFirstRun, e) => {
       }))
   }
   ipcMain.on(messages.GET_EXISTING_OBJECTS, (event, categoryName, records) => {
-    if (getSetting(settings.SYNC_ENABLED) !== true) {
+    if (!syncEnabled()) {
       return
     }
     log(`getting existing objects for ${records.length} ${categoryName}`)
@@ -262,7 +270,28 @@ module.exports.onSyncReady = (isFirstRun, e) => {
   pollIntervalId = setInterval(poll, config.fetchInterval)
 }
 
+/**
+ * Called to initialize sync, regardless of whether it is enabled.
+ * @param {Object} initialState - initial appState.sync
+ */
 module.exports.init = function (initialState) {
+  // GET_INIT_DATA is the first message sent by the sync-client when it starts
+  ipcMain.on(messages.GET_INIT_DATA, (e) => {
+    // Unregister the previous dispatcher cb
+    if (dispatcherCallback) {
+      appDispatcher.unregister(dispatcherCallback)
+    }
+    // Register the dispatcher callback now that we have a valid sender
+    dispatcherCallback = doAction.bind(null, e.sender)
+    appDispatcher.register(dispatcherCallback)
+    // Send the initial data
+    if (syncEnabled()) {
+      const appState = AppStore.getState().get('sync')
+      const seed = appState.getIn(['sync', 'seed']) || null
+      deviceId = appState.getIn(['sync', 'deviceId']) || null
+      e.sender.send(messages.GOT_INIT_DATA, seed, deviceId, config)
+    }
+  })
   // SAVE_INIT_DATA is sent by about:preferences before sync is enabled
   // when restoring from an existing seed
   ipcMain.on(messages.SAVE_INIT_DATA, (e, seed, newDeviceId) => {
@@ -288,26 +317,19 @@ module.exports.init = function (initialState) {
         newDeviceId ? new Immutable.List(newDeviceId) : null)
     }
   })
-  if (getSetting(settings.SYNC_ENABLED) !== true) {
-    return
-  }
-  ipcMain.on(messages.GET_INIT_DATA, (e) => {
-    const seed = initialState.seed || null
-    deviceId = initialState.deviceId || null
-    e.sender.send(messages.GOT_INIT_DATA, seed, deviceId, config)
-  })
   ipcMain.on(messages.SYNC_READY, module.exports.onSyncReady.bind(null,
-    !initialState.seed && !initialState.deviceId))
+    hasRun ? false : !initialState.seed && !initialState.deviceId))
   ipcMain.on(messages.SYNC_DEBUG, (e, msg) => {
     log(msg)
   })
 }
 
+/**
+ * Called when sync is disabled.
+ */
 module.exports.stop = function () {
+  console.log('stopping sync')
   if (pollIntervalId !== null) {
     clearInterval(pollIntervalId)
-  }
-  if (dispatcherCallback) {
-    appDispatcher.unregister(dispatcherCallback)
   }
 }
