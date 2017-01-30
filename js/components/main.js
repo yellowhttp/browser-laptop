@@ -72,7 +72,7 @@ const {isIntermediateAboutPage, getBaseUrl, isNavigatableAboutPage} = require('.
 const siteSettings = require('../state/siteSettings')
 const urlParse = require('../../app/common/urlParse')
 const debounce = require('../lib/debounce')
-const {currentWindow, isMaximized, isFocused, isFullScreen} = require('../../app/renderer/currentWindow')
+const {currentWindow, currentWindowId, isMaximized, isFocused, isFullScreen} = require('../../app/renderer/currentWindow')
 const emptyMap = new Immutable.Map()
 const emptyList = new Immutable.List()
 
@@ -240,10 +240,10 @@ class Main extends ImmutableComponent {
       if (!this.braveShieldsDisabled) {
         this.onBraveMenu()
       } else {
-        windowActions.newFrame({
-          location: 'about:preferences#shields',
-          singleFrame: true
-        }, true)
+        appActions.maybeCreateTabRequested({
+          url: 'about:preferences#shields',
+          windowId: currentWindowId
+        })
       }
     })
     ipc.on(messages.ENABLE_SWIPE_GESTURE, (e) => {
@@ -334,27 +334,6 @@ class Main extends ImmutableComponent {
     this.registerSwipeListener()
     this.registerWindowLevelShortcuts()
     this.registerCustomTitlebarHandlers()
-
-    ipc.on(messages.SHORTCUT_NEW_FRAME, (event, url, options = {}) => {
-      if (options.singleFrame) {
-        const frameProps = self.props.windowState.get('frames').find((frame) => frame.get('location') === url)
-        if (frameProps) {
-          windowActions.setActiveFrame(frameProps)
-          return
-        }
-      }
-      let openInForeground = getSetting(settings.SWITCH_TO_NEW_TABS) === true || options.openInForeground
-      const frameOpts = options.frameOpts || {
-        location: url,
-        isPrivate: !!options.isPrivate,
-        isPartitioned: !!options.isPartitioned,
-        parentFrameKey: options.parentFrameKey
-      }
-      if (options.partitionNumber !== undefined) {
-        frameOpts.partitionNumber = options.partitionNumber
-      }
-      windowActions.newFrame(frameOpts, openInForeground)
-    })
 
     ipc.on(messages.NEW_POPUP_WINDOW, function (evt, extensionId, src, props) {
       windowActions.setPopupWindowDetail(Immutable.fromJS({

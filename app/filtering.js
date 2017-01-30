@@ -39,6 +39,7 @@ const beforeSendHeadersFilteringFns = []
 const beforeRequestFilteringFns = []
 const beforeRedirectFilteringFns = []
 const headersReceivedFilteringFns = []
+let partitionsToInitialize = []
 let initializedPartitions = {}
 
 const transparent1pxGif = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
@@ -535,13 +536,21 @@ function registerForMagnetHandler (session) {
 }
 
 function initSession (ses, partition) {
-  initializedPartitions[partition] = true
   registeredSessions[partition] = ses
   ses.setEnableBrotli(true)
   ses.userPrefs.setDefaultZoomLevel(getSetting(settings.DEFAULT_ZOOM_LEVEL) || config.zoom.defaultValue)
 }
 
-function initForPartition (partition) {
+const initPartition = (partition) => {
+  // Partitions can only be initialized once the app is ready
+  if (!app.isReady()) {
+    partitionsToInitialize.push(partition)
+    return
+  }
+  if (initializedPartitions[partition]) {
+    return
+  }
+  initializedPartitions[partition] = true
   let fns = [initSession,
     userPrefs.init,
     hostContentSettings.init,
@@ -559,6 +568,10 @@ function initForPartition (partition) {
   let ses = session.fromPartition(partition, options)
   fns.forEach((fn) => { fn(ses, partition, module.exports.isPrivate(partition)) })
 }
+
+app.on('browser-context-created', (e, session) => {
+  initPartition(session.partition)
+})
 
 const filterableProtocols = ['http:', 'https:']
 
@@ -604,17 +617,8 @@ module.exports.init = (state, action, store) => {
   appStore = store
 
   setImmediate(() => {
-    ['default'].forEach((partition) => {
-      initForPartition(partition)
-    })
-    ipcMain.on(messages.INITIALIZE_PARTITION, (e, partition) => {
-      if (initializedPartitions[partition]) {
-        e.returnValue = true
-        return e.returnValue
-      }
-      initForPartition(partition)
-      e.returnValue = true
-      return e.returnValue
+    ['default', ...partitionsToInitialize].forEach((partition) => {
+      initPartition(partition)
     })
     ipcMain.on(messages.NOTIFICATION_RESPONSE, (e, message, buttonIndex, persist) => {
       if (permissionCallbacks[message]) {

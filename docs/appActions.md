@@ -33,16 +33,6 @@ Dispatches an event to the main process to create a new window.
 
 
 
-### newTab(createProperties) 
-
-A new tab has been requested
-
-**Parameters**
-
-**createProperties**: `Object`, windowId, url, active, openerTabId
-
-
-
 ### tabCreated(tabValue) 
 
 A new tab has been created
@@ -50,6 +40,27 @@ A new tab has been created
 **Parameters**
 
 **tabValue**: `Object`, A new tab has been created
+
+
+
+### tabCreateRequested(createProperties) 
+
+A request for a new tab has been made with the specified createProperties
+
+**Parameters**
+
+**createProperties**: `Object`, A request for a new tab has been made with the specified createProperties
+
+
+
+### maybeCreateTabRequested(createProperties) 
+
+A request for a "maybe" new tab has been made with the specified createProperties
+If a tab is already opened it will instead set it as active.
+
+**Parameters**
+
+**createProperties**: `Object`, these are only used if a new tab is being created
 
 
 
@@ -649,6 +660,18 @@ Dispatches a message when a tab is being cloned
 **tabId**: `number`, The tabId of the tab to clone
 
 **options**: `object`, object containing options such as acive, back, and forward booleans
+
+
+
+### newWebContentsAdded(windowId, frameOpts) 
+
+Dispatches a message when a web contents is added
+
+**Parameters**
+
+**windowId**: `number`, The windowId of the host window
+
+**frameOpts**: `object`, frame options for the added web contents
 
 
 

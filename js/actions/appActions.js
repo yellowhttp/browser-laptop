@@ -66,17 +66,6 @@ const appActions = {
   },
 
   /**
-   * A new tab has been requested
-   * @param {Object} createProperties - windowId, url, active, openerTabId
-   */
-  newTab: function (frameProps) {
-    AppDispatcher.dispatch({
-      actionType: appConstants.APP_NEW_TAB,
-      frameProps
-    })
-  },
-
-  /**
    * A new tab has been created
    * @param {Object} tabValue
    */
@@ -84,6 +73,30 @@ const appActions = {
     AppDispatcher.dispatch({
       actionType: appConstants.APP_TAB_CREATED,
       tabValue
+    })
+  },
+
+  /**
+   * A request for a new tab has been made with the specified createProperties
+   * @param {Object} createProperties
+   */
+  tabCreateRequested: function (createProperties) {
+    AppDispatcher.dispatch({
+      actionType: appConstants.APP_CREATE_TAB_REQUESTED,
+      createProperties
+    })
+  },
+
+  /**
+   * A request for a "maybe" new tab has been made with the specified createProperties
+   * If a tab is already opened it will instead set it as active.
+   *
+   * @param {Object} createProperties - these are only used if a new tab is being created
+   */
+  maybeCreateTabRequested: function (createProperties) {
+    AppDispatcher.dispatch({
+      actionType: appConstants.APP_MAYBE_CREATE_TAB_REQUESTED,
+      createProperties
     })
   },
 
@@ -800,8 +813,22 @@ const appActions = {
       tabId,
       options
     })
-  }
+  },
 
+  /**
+   * Dispatches a message when a web contents is added
+   * @param {number} windowId - The windowId of the host window
+   * @param {object} frameOpts - frame options for the added web contents
+   */
+  newWebContentsAdded: function (windowId, frameOpts) {
+    AppDispatcher.dispatch({
+      actionType: appConstants.APP_NEW_WEB_CONTENTS_ADDED,
+      queryInfo: {
+        windowId
+      },
+      frameOpts
+    })
+  }
 }
 
 module.exports = appActions

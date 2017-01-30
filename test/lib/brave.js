@@ -494,6 +494,13 @@ var exports = {
       }, frameOpts, browserOpts).then((response) => response.value)
     })
 
+    this.app.client.addCommand('newTab', function (createProperties = {}) {
+      return this
+        .execute(function (createProperties) {
+          return devTools('appActions').tabCreateRequested(createProperties)
+        }, createProperties)
+    })
+
     /**
      * Adds a site to the sites list, such as a bookmarks.
      *

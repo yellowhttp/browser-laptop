@@ -1,7 +1,6 @@
 /* global describe, it, before, beforeEach */
 
 const Brave = require('../lib/brave')
-const messages = require('../../js/constants/messages')
 const settings = require('../../js/constants/settings')
 const {urlInput, urlBarSuggestions} = require('../lib/selectors')
 
@@ -28,7 +27,7 @@ describe('urlBarSuggestions', function () {
       .loadUrl(this.page2Url)
       .windowByUrl(Brave.browserWindowUrl)
       .waitForSiteEntry(this.page2Url)
-      .ipcSend(messages.SHORTCUT_NEW_FRAME)
+      .newTab()
       .waitForUrl(Brave.newTabUrl)
       .windowByUrl(Brave.browserWindowUrl)
       .waitForExist('.tab[data-frame-key="2"].active')

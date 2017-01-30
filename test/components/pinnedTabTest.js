@@ -20,7 +20,7 @@ describe('pinnedTabs', function () {
       yield setup(this.app.client)
       this.page1Url = Brave.server.url('page1.html')
       yield this.app.client
-        .ipcSend(messages.SHORTCUT_NEW_FRAME, this.page1Url)
+        .newTab({ url: this.page1Url })
         .waitForUrl(this.page1Url)
         .windowByUrl(Brave.browserWindowUrl)
         .waitForExist('.tab[data-frame-key="2"]')
@@ -42,7 +42,7 @@ describe('pinnedTabs', function () {
     })
     it('pinning the same site again combines it', function * () {
       yield this.app.client
-        .ipcSend(messages.SHORTCUT_NEW_FRAME, this.page1Url)
+        .newTab({ url: this.page1Url })
         .waitForUrl(this.page1Url)
         .windowByUrl(Brave.browserWindowUrl)
         .waitForExist('.tab[data-frame-key="3"]')
@@ -58,7 +58,7 @@ describe('pinnedTabs', function () {
       yield setup(this.app.client)
       this.page1Url = Brave.server.url('page1.html')
       yield this.app.client
-        .ipcSend(messages.SHORTCUT_NEW_FRAME, this.page1Url)
+        .newTab({ url: this.page1Url })
         .waitForUrl(this.page1Url)
         .windowByUrl(Brave.browserWindowUrl)
         .waitForExist('.tab[data-frame-key="2"]')
@@ -66,7 +66,7 @@ describe('pinnedTabs', function () {
         .waitForExist(pinnedTabsTabs)
         .waitForElementCount(pinnedTabsTabs, 1)
         .waitForElementCount(tabsTabs, 1)
-        .ipcSend(messages.SHORTCUT_NEW_FRAME, this.page1Url, {partitionNumber: 1})
+        .newTab({ url: this.page1Url, partitionNumber: 1 })
         .waitForExist('.tab[data-frame-key="3"]')
         .setPinned(this.page1Url, true, {partitionNumber: 1})
         .waitForElementCount(pinnedTabsTabs, 2)
@@ -129,7 +129,7 @@ describe('pinnedTabs', function () {
       yield setup(this.app.client)
       this.page1Url = Brave.server.url('page1.html')
       yield this.app.client
-        .ipcSend(messages.SHORTCUT_NEW_FRAME, this.page1Url)
+        .newTab({ url: this.page1Url })
         .waitForUrl(this.page1Url)
         .windowByUrl(Brave.browserWindowUrl)
         .waitForExist('.tab[data-frame-key="2"]')

@@ -20,6 +20,12 @@ const tabsReducer = (state, action) => {
     case appConstants.APP_TAB_CREATED:
       state = tabState.maybeCreateTab(state, action)
       break
+    case appConstants.APP_CREATE_TAB_REQUESTED:
+      state = tabs.createTab(state, action)
+      break
+    case appConstants.APP_MAYBE_CREATE_TAB_REQUESTED:
+      state = tabs.maybeCreateTab(state, action)
+      break
     case appConstants.APP_TAB_UPDATED:
       state = tabState.maybeCreateTab(state, action)
       break

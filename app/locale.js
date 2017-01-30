@@ -84,7 +84,6 @@ var rendererIdentifiers = function () {
     'importFrom',
     'closeWindow',
     'savePageAs',
-    'spreadTheWord',
     'share',
     'undo',
     'redo',

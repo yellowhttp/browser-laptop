@@ -745,9 +745,6 @@ const doAction = (action) => {
         windowState = windowState.setIn(['modalDialogDetail', action.className], Immutable.fromJS(action.props))
       }
       break
-    case appConstants.APP_NEW_TAB:
-      newFrame(action.frameProps, action.frameProps.get('disposition') === 'foreground-tab')
-      break
     case windowConstants.WINDOW_TAB_CLOSED_WITH_MOUSE:
       if (frameStateUtil.getNonPinnedFrameCount(windowState) % getSetting(settings.TABS_PER_PAGE) === 0) {
         windowState = windowState.deleteIn(['ui', 'tabs', 'fixTabWidth'])
@@ -757,6 +754,9 @@ const doAction = (action) => {
       break
     case windowConstants.WINDOW_TAB_MOUSE_LEAVE:
       windowState = windowState.deleteIn(['ui', 'tabs', 'fixTabWidth'])
+      break
+    case appConstants.APP_NEW_WEB_CONTENTS_ADDED:
+      newFrame(action.frameOpts, action.frameOpts.openInForeground)
       break
     default:
       break

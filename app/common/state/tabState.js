@@ -122,6 +122,15 @@ const api = {
     return state.get('tabs').filter((tab) => tab.get('windowId') === windowId)
   },
 
+  getMatchingTab: (state, createProperties) => {
+    state = validateState(state)
+    const windowId = validateId('windowId', createProperties.get('windowId'))
+    return state.get('tabs').find(
+      (tab) => tab.get('windowId') === windowId &&
+        tab.get('url') === createProperties.get('url') &&
+        (tab.get('partition') || 'default') === (createProperties.get('partition') || 'default'))
+  },
+
   getTabsByWindow: (state, windowValue) => {
     state = validateState(state)
     windowValue = validateWindowValue(windowValue)

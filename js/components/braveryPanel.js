@@ -15,6 +15,7 @@ const appActions = require('../actions/appActions')
 const urlParse = require('../../app/common/urlParse')
 const cx = require('../lib/classSet')
 const messages = require('../constants/messages')
+const {currentWindowId} = require('../../app/renderer/currentWindow')
 const siteUtil = require('../state/siteUtil')
 
 class BraveryPanel extends ImmutableComponent {
@@ -134,10 +135,16 @@ class BraveryPanel extends ImmutableComponent {
     ipc.emit(messages.SHORTCUT_ACTIVE_FRAME_LOAD_URL, {}, this.props.activeRequestedLocation)
   }
   onEditGlobal () {
-    ipc.emit(messages.SHORTCUT_NEW_FRAME, {}, 'about:preferences#shields')
+    appActions.tabCreateRequested({
+      url: 'about:preferences#shields',
+      windowId: currentWindowId
+    })
   }
   onInfoClick () {
-    ipc.emit(messages.SHORTCUT_NEW_FRAME, {}, config.fingerprintingInfoUrl)
+    appActions.tabCreateRequested({
+      url: config.fingerprintingInfoUrl,
+      windowId: currentWindowId
+    })
   }
   onToggleSiteSetting (setting, e) {
     if (setting !== 'shieldsUp' && !this.props.braverySettings.shieldsUp) {

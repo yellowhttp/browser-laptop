@@ -25,6 +25,7 @@ const windowStore = require('../stores/windowStore')
 const contextMenus = require('../contextMenus')
 const LongPressButton = require('./longPressButton')
 const PublisherToggle = require('../../app/renderer/components/publisherToggle')
+const {currentWindowId} = require('../../app/renderer/currentWindow')
 
 class NavigationBar extends ImmutableComponent {
   constructor () {
@@ -72,7 +73,14 @@ class NavigationBar extends ImmutableComponent {
   onHome () {
     getSetting(settings.HOMEPAGE).split('|')
       .forEach((homepage, i) => {
-        ipc.emit(i === 0 ? messages.SHORTCUT_ACTIVE_FRAME_LOAD_URL : messages.SHORTCUT_NEW_FRAME, {}, homepage)
+        if (i === 0) {
+          ipc.emit(messages.SHORTCUT_ACTIVE_FRAME_LOAD_URL, {}, homepage)
+        } else {
+          appActions.tabCreateRequested(Immutable.fromJS({
+            url: homepage,
+            windowId: currentWindowId
+          }))
+        }
       })
   }
 

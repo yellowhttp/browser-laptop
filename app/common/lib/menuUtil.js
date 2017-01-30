@@ -10,6 +10,7 @@ const siteTags = require('../../../js/constants/siteTags')
 const eventUtil = require('../../../js/lib/eventUtil')
 const siteUtil = require('../../../js/state/siteUtil')
 const locale = require('../../locale')
+const appActions = require('../../../js/actions/appActions')
 
 /**
  * Get the an electron MenuItem object from a Menu based on its label
@@ -88,7 +89,11 @@ const createBookmarkTemplateItems = (bookmarks, parentFolderId) => {
         label: site.get('customTitle') || site.get('title') || site.get('location'),
         click: (item, focusedWindow, e) => {
           if (eventUtil.isForSecondaryAction(e)) {
-            CommonMenu.sendToFocusedWindow(focusedWindow, [messages.SHORTCUT_NEW_FRAME, site.get('location'), { openInForeground: !!e.shiftKey }])
+            appActions.tabCreateRequested({
+              url: site.get('location'),
+              windowId: focusedWindow.id,
+              active: !!e.shiftKey
+            })
           } else {
             CommonMenu.sendToFocusedWindow(focusedWindow, [messages.SHORTCUT_ACTIVE_FRAME_LOAD_URL, site.get('location')])
           }
@@ -134,7 +139,11 @@ module.exports.createRecentlyClosedTemplateItems = (lastClosedFrames) => {
         label: closedFrame.get('title') || closedFrame.get('location'),
         click: (item, focusedWindow, e) => {
           if (eventUtil.isForSecondaryAction(e)) {
-            CommonMenu.sendToFocusedWindow(focusedWindow, [messages.SHORTCUT_NEW_FRAME, closedFrame.get('location'), { openInForeground: !!e.shiftKey }])
+            appActions.tabCreateRequested({
+              url: closedFrame.get('location'),
+              windowId: focusedWindow.id,
+              active: !!e.shiftKey
+            })
           } else {
             CommonMenu.sendToFocusedWindow(focusedWindow, [messages.SHORTCUT_ACTIVE_FRAME_LOAD_URL, closedFrame.get('location')])
           }

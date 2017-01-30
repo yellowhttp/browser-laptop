@@ -31,7 +31,6 @@ const messages = {
   SHORTCUT_ACTIVE_FRAME_FIND_NEXT: _,
   SHORTCUT_ACTIVE_FRAME_FIND_PREV: _,
   // Frame management shortcuts
-  SHORTCUT_NEW_FRAME: _, /** @arg {string} opt_url to load if any */
   SHORTCUT_CLOSE_FRAME: _, /** @arg {number} opt_key of frame, defaults to active frame */
   SHORTCUT_CLOSE_OTHER_FRAMES: _, /** @arg {boolean} close to the right, @arg {boolean} close to the left */
   SHORTCUT_UNDO_CLOSED_FRAME: _,
@@ -88,7 +87,6 @@ const messages = {
   DECRYPTED_PASSWORD: _, /** @arg {number} decrypted pw, @arg {number} id */
   // Init
   INITIALIZE_WINDOW: _,
-  INITIALIZE_PARTITION: _, /** @arg {string} name of partition */
   // Session restore
   REQUEST_WINDOW_STATE: _,
   RESPONSE_WINDOW_STATE: _,

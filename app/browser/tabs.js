@@ -1,11 +1,13 @@
 const appActions = require('../../js/actions/appActions')
-const messages = require('../..//js/constants/messages')
 const Immutable = require('immutable')
 const tabState = require('../common/state/tabState')
 const {app, extensions} = require('electron')
-const { makeImmutable } = require('../common/state/immutableUtil')
+const {makeImmutable} = require('../common/state/immutableUtil')
+const {getTargetAboutUrl, isSourceAboutUrl, newFrameUrl} = require('../../js/lib/appUrlUtil')
 
 let currentWebContents = {}
+let currentPartitionNumber = 0
+const incrementPartitionNumber = () => ++currentPartitionNumber
 
 const cleanupWebContents = (tabId) => {
   if (currentWebContents[tabId]) {
@@ -33,6 +35,25 @@ const updateTab = (tabId) => {
       appActions.tabUpdated(tabValue)
     })
   }
+}
+
+/**
+ * Obtains the curent partition.
+ * Warning: This function has global side effects in that it increments the
+ * global next partition number if isPartitioned is passed into the create options.
+ */
+const getPartition = (createProperties) => {
+  let partition = 'persist:default'
+  if (createProperties.partition) {
+    partition = createProperties.partition
+  } else if (createProperties.isPrivate) {
+    partition = 'default'
+  } else if (createProperties.isPartitioned) {
+    partition = `persist:partition-${incrementPartitionNumber()}`
+  } else if (createProperties.partitionNumber) {
+    partition = `persist:partition-${createProperties.partitionNumber}`
+  }
+  return partition
 }
 
 const api = {
@@ -67,6 +88,7 @@ const api = {
       const frameOpts = {
         location,
         partition: newTab.session.partition,
+        openInForeground: newTab.active,
         guestInstanceId: newTab.guestInstanceId,
         openerTabId,
         disposition,
@@ -77,8 +99,8 @@ const api = {
         const windowOpts = makeImmutable(size)
         appActions.newWindow(makeImmutable(frameOpts), windowOpts)
       } else {
-        let hostWebContents = source.hostWebContents || source
-        hostWebContents.send(messages.SHORTCUT_NEW_FRAME, location, { frameOpts })
+        const hostWebContents = source.hostWebContents || source
+        appActions.newWebContentsAdded(hostWebContents.id, frameOpts)
       }
     })
 
@@ -261,9 +283,45 @@ const api = {
 
   create: (createProperties, cb = null) => {
     createProperties = makeImmutable(createProperties).toJS()
+    if (!createProperties.url) {
+      createProperties.url = newFrameUrl()
+    }
+    if (isSourceAboutUrl(createProperties.url)) {
+      createProperties.url = getTargetAboutUrl(createProperties.url)
+    }
+    const partition = getPartition(createProperties)
+    if (partition) {
+      createProperties.partition = partition
+    }
     extensions.createTab(createProperties, (tab) => {
       cb && cb(tab)
     })
+  },
+
+  createTab: (state, action) => {
+    api.create(action.get('createProperties'))
+    return state
+  },
+
+  maybeCreateTab: (state, action) => {
+    action = makeImmutable(action)
+    let createProperties = makeImmutable(action.get('createProperties'))
+    let url = createProperties.get('url')
+    const windowId = createProperties.get('windowId')
+    if (isSourceAboutUrl(url)) {
+      url = getTargetAboutUrl(url)
+      createProperties = createProperties.set('url', url)
+    }
+    const tabData = tabState.getMatchingTab(state, createProperties, windowId, url)
+    if (tabData) {
+      const tab = api.getWebContents(tabData.get('id'))
+      if (tab && !tab.isDestroyed()) {
+        tab.setActive(true)
+      }
+    } else {
+      api.createTab(state, action)
+    }
+    return state
   }
 }
 
