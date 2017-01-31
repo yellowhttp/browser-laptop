@@ -7,7 +7,19 @@
 
 .notificationBar {
   display: inline-block;
+  position: relative;
+  z-index: 1000;
   width: 100%;
+  filter: drop-shadow(0 0 5px rgba(0, 0, 0, .5));
+
+  &::after {
+    content: '';
+    display: block;
+    width: 1em; height: 1em;
+    background-color: #ffefc0;
+    position: absolute; top: 0; left: 50%;
+    transform: translate(-50%, -50%) rotate(45deg)
+  }
 
   .notificationItem {
     background-color: #ffefc0;

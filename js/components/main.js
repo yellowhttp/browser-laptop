@@ -1140,12 +1140,6 @@ class Main extends ImmutableComponent {
 
         <UpdateBar updates={this.props.appState.get('updates')} />
         {
-          this.props.appState.get('notifications') && this.props.appState.get('notifications').size && activeFrame
-          ? <NotificationBar notifications={this.props.appState.get('notifications')}
-            activeFrame={activeFrame} />
-          : null
-        }
-        {
           showBookmarksToolbar
           ? <BookmarksToolbar
             draggingOverData={this.props.windowState.getIn(['ui', 'dragging', 'draggingOver', 'dragType']) === dragTypes.BOOKMARK && this.props.windowState.getIn(['ui', 'dragging', 'draggingOver'])}
@@ -1189,6 +1183,12 @@ class Main extends ImmutableComponent {
           activeFrameKey={activeFrame && activeFrame.get('key') || undefined}
           onMenu={this.onHamburgerMenu}
         />
+        {
+          this.props.appState.get('notifications') && this.props.appState.get('notifications').size && activeFrame
+          ? <NotificationBar notifications={this.props.appState.get('notifications')}
+            activeFrame={activeFrame} />
+          : null
+        }
 
         {
           activeFrame && activeFrame.get('findbarShown') && !activeFrame.get('isFullScreen')
