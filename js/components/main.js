@@ -26,7 +26,7 @@ const UpdateBar = require('./updateBar')
 const NotificationBar = require('./notificationBar')
 const DownloadsBar = require('../../app/renderer/components/downloadsBar')
 const Button = require('./button')
-const BrowserActionButton = require('../../app/renderer/components/browserActionButton')
+const BrowserAction = require('../../app/renderer/components/browserAction')
 const SiteInfo = require('./siteInfo')
 const BraveryPanel = require('./braveryPanel')
 const ClearBrowsingDataPanel = require('./clearBrowsingDataPanel')
@@ -809,7 +809,7 @@ class Main extends ImmutableComponent {
       .map((extension) => extensionState.getBrowserActionByTabId(this.props.appState, extension.get('id'), this.activeTabId))
       .filter((browserAction) => browserAction)
     let buttons = extensionBrowserActions.map((browserAction, id) =>
-      <BrowserActionButton
+      <BrowserAction
         browserAction={browserAction}
         extensionId={id}
         tabId={this.activeTabId}
