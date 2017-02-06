@@ -1,0 +1,21 @@
+#include <tunables/global>
+
+/usr/share/brave/brave flags=(complain) {
+  #include <abstractions/base>
+  #include <abstractions/bash>
+  #include <abstractions/nameservice>
+  #include <abstractions/postfix-common>
+  #include <abstractions/python>
+
+  capability sys_admin,
+
+  ptrace trace peer=/usr/share/brave/brave,
+  ptrace trace peer=/usr/share/brave/brave//null-/usr/bin/lsb_release,
+  ptrace trace peer=/usr/share/brave/brave//null-/usr/bin/xdg-settings,
+
+  ...
+
+  ...
+
+# etc, should get an apparmor-profile working for brave.
+
